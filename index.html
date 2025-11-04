@@ -48,21 +48,25 @@
         <p>Redirecting...</p>
     </div>
     <script>
-        // Immediate redirect with cache busting and timestamp
+        // Force immediate redirect with multiple cache-busting methods
         (function() {
-            var targetUrl = "https://shaw-leonard-citizen-novelty.trycloudflare.com";
-            var currentUrl = window.location.href.split('?')[0];
+            var targetUrl = "https://suspended-telescope-substantial-smart.trycloudflare.com";
+            var timestamp = Date.now();
+            var random = Math.random().toString(36).substring(7);
             
-            // Force clear any cached redirects
-            if (currentUrl !== targetUrl) {
-                // Use replace to avoid history entry
-                window.location.replace(targetUrl + "?ref=" + Date.now());
+            // Multiple redirect methods to bypass all caches
+            try {
+                // Method 1: location.replace with timestamp
+                window.location.replace(targetUrl + "?v=" + timestamp + "&r=" + random);
+            } catch(e) {
+                // Method 2: location.href as fallback
+                window.location.href = targetUrl + "?v=" + timestamp + "&r=" + random;
             }
         })();
     </script>
     <noscript>
-        <meta http-equiv="refresh" content="0; url=https://shaw-leonard-citizen-novelty.trycloudflare.com">
-        <p>Redirecting to <a href="https://shaw-leonard-citizen-novelty.trycloudflare.com">application</a>...</p>
+        <meta http-equiv="refresh" content="0; url=https://suspended-telescope-substantial-smart.trycloudflare.com">
+        <p>Redirecting to <a href="https://suspended-telescope-substantial-smart.trycloudflare.com">application</a>...</p>
     </noscript>
 </body>
 </html>
