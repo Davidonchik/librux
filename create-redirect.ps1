@@ -126,10 +126,24 @@ if ($output) {
                     git push origin main 2>&1 | Out-Null
                     if ($LASTEXITCODE -eq 0) {
                         Write-Host "Pushed to GitHub successfully!" -ForegroundColor Green
+                        
+                        # Force GitHub Pages rebuild with empty commit
+                        Write-Host "Forcing GitHub Pages rebuild..." -ForegroundColor Yellow
+                        Start-Sleep -Seconds 2
+                        git commit --allow-empty -m "Force Pages rebuild $(Get-Date -Format 'yyyyMMddHHmmss')" 2>&1 | Out-Null
+                        git push origin main 2>&1 | Out-Null
+                        Write-Host "Triggered GitHub Pages rebuild" -ForegroundColor Green
                     } else {
                         git push origin master 2>&1 | Out-Null
                         if ($LASTEXITCODE -eq 0) {
                             Write-Host "Pushed to GitHub successfully!" -ForegroundColor Green
+                            
+                            # Force GitHub Pages rebuild with empty commit
+                            Write-Host "Forcing GitHub Pages rebuild..." -ForegroundColor Yellow
+                            Start-Sleep -Seconds 2
+                            git commit --allow-empty -m "Force Pages rebuild $(Get-Date -Format 'yyyyMMddHHmmss')" 2>&1 | Out-Null
+                            git push origin master 2>&1 | Out-Null
+                            Write-Host "Triggered GitHub Pages rebuild" -ForegroundColor Green
                         } else {
                             Write-Host "Push failed. Check git credentials." -ForegroundColor Yellow
                         }

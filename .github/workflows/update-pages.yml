@@ -1,0 +1,25 @@
+name: Force GitHub Pages Update
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'index.html'
+      - '.version'
+
+jobs:
+  update-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Force GitHub Pages rebuild
+        run: |
+          echo "Version: $(date +%s)" >> .force-update
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .force-update
+          git commit -m "Force Pages update $(date +%s)" || exit 0
+          git push
+
