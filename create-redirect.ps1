@@ -108,6 +108,12 @@ if ($output) {
             Set-Content -Path '.version' -Value $versionContent -Encoding UTF8
             Write-Host "Created .version file for cache busting" -ForegroundColor Green
             
+            # Add unique comment to HTML to force file change detection
+            $htmlContent = Get-Content 'index.html' -Raw
+            $htmlContent = $htmlContent -replace '<!--.*?-->', "<!-- Version: $version Updated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') -->`n<!-- Previous URL removed, new URL: $url -->"
+            Set-Content -Path 'index.html' -Value $htmlContent -Encoding UTF8 -NoNewline
+            Write-Host "Added version comment to index.html" -ForegroundColor Green
+            
             # Add and commit
             git add index.html redirect.html .version 2>&1 | Out-Null
             $commitMessage = "Update redirect to $url [v$version]"
