@@ -10,16 +10,13 @@ if ($output) {
         Write-Host "Tunnel URL: $url" -ForegroundColor Green
         Write-Host ""
         
-        $timestamp = Get-Date -Format "yyyyMMddHHmmss"
         $html = @"
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="refresh" content="0; url=$url">
     <title>Librus Dashboard - Redirecting...</title>
     <style>
         body {
@@ -54,31 +51,14 @@ if ($output) {
             text-decoration: underline;
         }
     </style>
+    <script>window.location.href = "$url";</script>
 </head>
 <body>
     <div class="container">
         <div class="spinner"></div>
         <h1>Librus Dashboard</h1>
-        <p>Redirecting...</p>
-    </div>
-    <script>
-        // Get URL from query parameter or use default
-        var urlParams = new URLSearchParams(window.location.search);
-        var targetUrl = urlParams.get('to') || "$url";
-        
-        // Force immediate redirect with cache busting
-        var timestamp = Date.now();
-        var random = Math.random().toString(36).substring(7);
-        
-        // Use replace to avoid history entry
-        if (targetUrl && !targetUrl.includes(window.location.hostname)) {
-            window.location.replace(targetUrl + (targetUrl.includes('?') ? '&' : '?') + "v=" + timestamp + "&r=" + random);
-        }
-    </script>
-    <noscript>
-        <meta http-equiv="refresh" content="0; url=$url">
         <p>Redirecting to <a href="$url">application</a>...</p>
-    </noscript>
+    </div>
 </body>
 </html>
 "@
@@ -102,21 +82,9 @@ if ($output) {
             Copy-Item -Path 'redirect.html' -Destination 'index.html' -Force
             Write-Host "Created index.html for GitHub Pages" -ForegroundColor Green
             
-            # Create version file with timestamp to force GitHub Pages update
-            $version = Get-Date -Format "yyyyMMddHHmmss"
-            $versionContent = "Version: $version`nTunnel URL: $url`nUpdated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-            Set-Content -Path '.version' -Value $versionContent -Encoding UTF8
-            Write-Host "Created .version file for cache busting" -ForegroundColor Green
-            
-            # Add unique comment to HTML to force file change detection
-            $htmlContent = Get-Content 'index.html' -Raw
-            $htmlContent = $htmlContent -replace '<!--.*?-->', "<!-- Version: $version Updated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') -->`n<!-- Previous URL removed, new URL: $url -->"
-            Set-Content -Path 'index.html' -Value $htmlContent -Encoding UTF8 -NoNewline
-            Write-Host "Added version comment to index.html" -ForegroundColor Green
-            
             # Add and commit
-            git add index.html redirect.html .version 2>&1 | Out-Null
-            $commitMessage = "Update redirect to $url [v$version]"
+            git add index.html redirect.html 2>&1 | Out-Null
+            $commitMessage = "Update redirect to $url"
             git commit -m $commitMessage 2>&1 | Out-Null
             
             if ($LASTEXITCODE -eq 0) {
@@ -129,24 +97,10 @@ if ($output) {
                     git push origin main 2>&1 | Out-Null
                     if ($LASTEXITCODE -eq 0) {
                         Write-Host "Pushed to GitHub successfully!" -ForegroundColor Green
-                        
-                        # Force GitHub Pages rebuild with empty commit
-                        Write-Host "Forcing GitHub Pages rebuild..." -ForegroundColor Yellow
-                        Start-Sleep -Seconds 2
-                        git commit --allow-empty -m "Force Pages rebuild $(Get-Date -Format 'yyyyMMddHHmmss')" 2>&1 | Out-Null
-                        git push origin main 2>&1 | Out-Null
-                        Write-Host "Triggered GitHub Pages rebuild" -ForegroundColor Green
                     } else {
                         git push origin master 2>&1 | Out-Null
                         if ($LASTEXITCODE -eq 0) {
                             Write-Host "Pushed to GitHub successfully!" -ForegroundColor Green
-                            
-                            # Force GitHub Pages rebuild with empty commit
-                            Write-Host "Forcing GitHub Pages rebuild..." -ForegroundColor Yellow
-                            Start-Sleep -Seconds 2
-                            git commit --allow-empty -m "Force Pages rebuild $(Get-Date -Format 'yyyyMMddHHmmss')" 2>&1 | Out-Null
-                            git push origin master 2>&1 | Out-Null
-                            Write-Host "Triggered GitHub Pages rebuild" -ForegroundColor Green
                         } else {
                             Write-Host "Push failed. Check git credentials." -ForegroundColor Yellow
                         }
