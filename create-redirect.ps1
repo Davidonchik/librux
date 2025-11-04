@@ -62,21 +62,18 @@ if ($output) {
         <p>Redirecting...</p>
     </div>
     <script>
-        // Force immediate redirect with multiple cache-busting methods
-        (function() {
-            var targetUrl = "$url";
-            var timestamp = Date.now();
-            var random = Math.random().toString(36).substring(7);
-            
-            // Multiple redirect methods to bypass all caches
-            try {
-                // Method 1: location.replace with timestamp
-                window.location.replace(targetUrl + "?v=" + timestamp + "&r=" + random);
-            } catch(e) {
-                // Method 2: location.href as fallback
-                window.location.href = targetUrl + "?v=" + timestamp + "&r=" + random;
-            }
-        })();
+        // Get URL from query parameter or use default
+        var urlParams = new URLSearchParams(window.location.search);
+        var targetUrl = urlParams.get('to') || "$url";
+        
+        // Force immediate redirect with cache busting
+        var timestamp = Date.now();
+        var random = Math.random().toString(36).substring(7);
+        
+        // Use replace to avoid history entry
+        if (targetUrl && !targetUrl.includes(window.location.hostname)) {
+            window.location.replace(targetUrl + (targetUrl.includes('?') ? '&' : '?') + "v=" + timestamp + "&r=" + random);
+        }
     </script>
     <noscript>
         <meta http-equiv="refresh" content="0; url=$url">
