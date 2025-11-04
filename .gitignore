@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.log
+tunnel-temp.txt
+tunnel-output.txt
+data.db
+*.db-journal
+.env
+.env.local
+.DS_Store
+Thumbs.db
+
