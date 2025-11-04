@@ -78,15 +78,23 @@ if ($output) {
                 git config user.email "davidonchik@users.noreply.github.com" 2>&1 | Out-Null
             }
             
-            # Create github-pages directory for GitHub Pages redirect (don't touch root index.html!)
-            if (-not (Test-Path "github-pages")) {
-                New-Item -ItemType Directory -Path "github-pages" | Out-Null
+            # Save original index.html template if it exists and is different
+            if (Test-Path "index.html") {
+                $currentContent = Get-Content "index.html" -Raw
+                $redirectContent = Get-Content "redirect.html" -Raw
+                # Only backup if it's the template (contains "src/main.tsx")
+                if ($currentContent -match "src/main\.tsx") {
+                    Copy-Item -Path 'index.html' -Destination 'index.html.template' -Force
+                    Write-Host "Backed up original index.html template" -ForegroundColor Gray
+                }
             }
-            Copy-Item -Path 'redirect.html' -Destination 'github-pages/index.html' -Force
-            Write-Host "Created github-pages/index.html for GitHub Pages" -ForegroundColor Green
+            
+            # Copy redirect.html to root index.html for GitHub Pages
+            Copy-Item -Path 'redirect.html' -Destination 'index.html' -Force
+            Write-Host "Created index.html for GitHub Pages redirect" -ForegroundColor Green
             
             # Add and commit
-            git add github-pages/index.html redirect.html 2>&1 | Out-Null
+            git add index.html redirect.html 2>&1 | Out-Null
             $commitMessage = "Update redirect to $url"
             git commit -m $commitMessage 2>&1 | Out-Null
             
@@ -100,10 +108,22 @@ if ($output) {
                     git push origin main 2>&1 | Out-Null
                     if ($LASTEXITCODE -eq 0) {
                         Write-Host "Pushed to GitHub successfully!" -ForegroundColor Green
+                        
+                        # Restore original index.html template for local development
+                        if (Test-Path "index.html.template") {
+                            Copy-Item -Path 'index.html.template' -Destination 'index.html' -Force
+                            Write-Host "Restored index.html template for local development" -ForegroundColor Gray
+                        }
                     } else {
                         git push origin master 2>&1 | Out-Null
                         if ($LASTEXITCODE -eq 0) {
                             Write-Host "Pushed to GitHub successfully!" -ForegroundColor Green
+                            
+                            # Restore original index.html template for local development
+                            if (Test-Path "index.html.template") {
+                                Copy-Item -Path 'index.html.template' -Destination 'index.html' -Force
+                                Write-Host "Restored index.html template for local development" -ForegroundColor Gray
+                            }
                         } else {
                             Write-Host "Push failed. Check git credentials." -ForegroundColor Yellow
                         }
