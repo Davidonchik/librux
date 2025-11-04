@@ -78,12 +78,15 @@ if ($output) {
                 git config user.email "davidonchik@users.noreply.github.com" 2>&1 | Out-Null
             }
             
-            # Copy redirect.html to index.html for GitHub Pages
-            Copy-Item -Path 'redirect.html' -Destination 'index.html' -Force
-            Write-Host "Created index.html for GitHub Pages" -ForegroundColor Green
+            # Create github-pages directory for GitHub Pages redirect (don't touch root index.html!)
+            if (-not (Test-Path "github-pages")) {
+                New-Item -ItemType Directory -Path "github-pages" | Out-Null
+            }
+            Copy-Item -Path 'redirect.html' -Destination 'github-pages/index.html' -Force
+            Write-Host "Created github-pages/index.html for GitHub Pages" -ForegroundColor Green
             
             # Add and commit
-            git add index.html redirect.html 2>&1 | Out-Null
+            git add github-pages/index.html redirect.html 2>&1 | Out-Null
             $commitMessage = "Update redirect to $url"
             git commit -m $commitMessage 2>&1 | Out-Null
             
